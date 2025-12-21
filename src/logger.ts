@@ -117,9 +117,7 @@ export function createLogger(options?: {
 
 	// 分隔线
 	loggerWithResult.divider = (char = "─", width = 80) => {
-		loggerWithResult.raw(
-			`${colors.dim}${char.repeat(width)}${colors.reset}\n`,
-		);
+		loggerWithResult.raw(`${colors.dim}${char.repeat(width)}${colors.reset}\n`);
 	};
 
 	// 进度条

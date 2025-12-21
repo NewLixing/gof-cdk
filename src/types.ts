@@ -77,6 +77,26 @@ export interface ProcessTask {
 }
 
 /**
+ * 会话任务接口（按玩家分组的任务）
+ * @interface
+ */
+export interface SessionTask {
+	fid: string;
+	cdks: string[];
+}
+
+/**
+ * 会话统计信息接口
+ * @interface
+ */
+export interface SessionStats {
+	fid: string;
+	playerName?: string;
+	duration: number;
+	requestCount: number;
+}
+
+/**
  * API 错误类
  * @class
  * @extends {Error}
