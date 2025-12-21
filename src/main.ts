@@ -351,6 +351,7 @@ const processFailedTasks = async (
  * 输出任务执行统计报告
  * @param stats 统计数据
  * @param results 结果列表
+ * @param showPlayerGroups 是否显示按玩家分组的详情（优化模式）
  */
 const printTaskSummary = (
 	stats: {
@@ -360,6 +361,7 @@ const printTaskSummary = (
 		alreadyClaimed: number;
 	},
 	results: GiftCodeResult[],
+	showPlayerGroups = false,
 ): void => {
 	const totalTasks =
 		stats.success + stats.alreadyClaimed + stats.timeout + stats.failure;
@@ -382,6 +384,56 @@ const printTaskSummary = (
 
 	// 使用边框输出统计报告
 	logger.box("🎆 任务执行统计报告", summaryContent, 70);
+
+	// 按玩家分组的详细统计（优化模式）
+	if (showPlayerGroups) {
+		logger.divider("─", 70);
+		logger.raw(
+			`\n${colors.cyan}${colors.bright}👥 按玩家分组统计${colors.reset}\n\n`,
+		);
+
+		// 按FID分组结果
+		const playerGroups = new Map<string, GiftCodeResult[]>();
+		for (const result of results) {
+			if (!playerGroups.has(result.fid)) {
+				playerGroups.set(result.fid, []);
+			}
+			playerGroups.get(result.fid)?.push(result);
+		}
+
+		// 输出每个玩家的统计
+		let playerIndex = 0;
+		for (const [fid, playerResults] of playerGroups) {
+			playerIndex++;
+			const playerSuccess = playerResults.filter((r) => r.success).length;
+			const playerAlreadyClaimed = playerResults.filter(
+				(r) => r.success && r.message.includes("已领过"),
+			).length;
+			const playerNewClaim = playerSuccess - playerAlreadyClaimed;
+			const playerFailed = playerResults.length - playerSuccess;
+			const playerName = playerResults[0]?.nickname || `FID=${fid}`;
+			const playerKid = playerResults[0]?.kid;
+
+			// 玩家信息标题
+			logger.raw(
+				`  ${colors.bright}${playerIndex}. ${playerName}${colors.reset}`,
+			);
+			if (playerKid !== undefined) {
+				logger.raw(` ${colors.dim}(区服${playerKid})${colors.reset}`);
+			}
+			logger.raw(` - ${colors.dim}FID: ${fid}${colors.reset}\n`);
+
+			// 该玩家的统计
+			logger.raw(
+				`     ${colors.green}✓ 新领取: ${playerNewClaim}${colors.reset}  `,
+			);
+			logger.raw(
+				`${colors.yellow}↻ 已领过: ${playerAlreadyClaimed}${colors.reset}  `,
+			);
+			logger.raw(`${colors.red}✗ 失败: ${playerFailed}${colors.reset}\n`);
+		}
+		logger.raw("\n");
+	}
 
 	// 成功的任务详情
 	const successTasks = results.filter((r) => r.success);
@@ -572,7 +624,8 @@ async function main(): Promise<void> {
 				timeout: timeoutCount,
 				failure: otherFailureCount,
 			};
-			printTaskSummary(normalStats, results);
+			// 使用优化流程时显示按玩家分组的统计
+			printTaskSummary(normalStats, results, true);
 		}
 
 		process.exit(0);
