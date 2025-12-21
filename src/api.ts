@@ -456,6 +456,9 @@ class ApiService {
 // 创建API服务实例
 const apiService = new ApiService();
 
+// 导出API服务供其他模块使用
+export { ApiService, apiService };
+
 /**
  * 处理单个礼包码
  * @param task 处理任务

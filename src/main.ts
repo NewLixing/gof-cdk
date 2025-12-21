@@ -1,9 +1,10 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { processSingleCode, removeSuccessfulTask } from "./api";
+import { apiService, processSingleCode, removeSuccessfulTask } from "./api";
+import { SessionManager } from "./api/session-manager";
 import { loadConfig } from "./config";
 import { colors, useLogger } from "./logger";
-import type { GiftCodeResult, ProcessTask } from "./types";
+import type { GiftCodeResult, ProcessTask, SessionTask } from "./types";
 import { sleep } from "./utils";
 
 // 禁用 TensorFlow.js 日志
@@ -100,6 +101,133 @@ const processGiftCodes = async (
 	}
 
 	return results;
+};
+
+/**
+ * 将 fids 和 cdks 转换为按玩家分组的任务
+ * @param fids - 玩家ID列表
+ * @param cdks - 礼包码列表
+ * @returns 按玩家分组的任务列表
+ */
+const groupTasksByPlayer = (fids: string[], cdks: string[]): SessionTask[] => {
+	return fids.map((fid) => ({
+		fid,
+		cdks: [...cdks], // 每个玩家处理所有礼包码
+	}));
+};
+
+/**
+ * 优化的礼包码处理流程（按玩家分组复用会话）
+ * @param cdks 礼包码列表
+ * @param fids 玩家ID列表
+ * @returns 处理结果列表
+ */
+const processGiftCodesOptimized = async (
+	cdks: string[],
+	fids: string[],
+): Promise<GiftCodeResult[]> => {
+	// 将任务按玩家分组
+	const sessionTasks = groupTasksByPlayer(fids, cdks);
+
+	logger.info(
+		`开始处理礼包码（优化模式），共 ${cdks.length} 个礼包码，${fids.length} 个玩家`,
+	);
+	logger.info(`生成会话任务列表，共 ${sessionTasks.length} 个会话`);
+
+	// 刷新日志缓冲区，确保所有日志都已输出
+	await logger.flush();
+
+	// 结果和统计
+	const allResults: GiftCodeResult[] = [];
+	const stats: ResultStats = {
+		success: 0,
+		failure: 0,
+		timeout: 0,
+		alreadyClaimed: 0,
+	};
+
+	// 串行处理每个玩家的会话
+	for (let i = 0; i < sessionTasks.length; i++) {
+		const sessionTask = sessionTasks[i];
+
+		// 显示玩家进度
+		logger.divider("━", 70);
+		logger.info(
+			`📍 处理玩家 ${i + 1}/${sessionTasks.length}: FID=${sessionTask.fid}`,
+		);
+		logger.divider("━", 70);
+
+		// 创建会话管理器
+		const session = new SessionManager(apiService, sessionTask.fid);
+
+		try {
+			// 初始化会话（获取玩家信息，只调用一次）
+			const initialized = await session.initialize();
+
+			if (!initialized) {
+				// 初始化失败，记录所有礼包码为失败
+				for (const cdk of sessionTask.cdks) {
+					const failedResult: GiftCodeResult = {
+						success: false,
+						message: "会话初始化失败",
+						cdk,
+						fid: sessionTask.fid,
+					};
+					allResults.push(failedResult);
+					stats.failure++;
+				}
+				continue;
+			}
+
+			// 批量处理该玩家的所有礼包码
+			const results = await session.processMultipleCodes(sessionTask.cdks);
+			allResults.push(...results);
+
+			// 更新统计信息
+			for (const result of results) {
+				if (result.success) {
+					if (result.message.includes("已领过")) {
+						stats.alreadyClaimed++;
+					} else {
+						stats.success++;
+					}
+				} else {
+					if (
+						result.message.includes("TIMEOUT") ||
+						result.message.includes("超时")
+					) {
+						stats.timeout++;
+					} else {
+						stats.failure++;
+					}
+				}
+			}
+		} catch (error) {
+			logger.error({ err: error }, `处理玩家 ${sessionTask.fid} 时出错`);
+
+			// 记录所有礼包码为失败
+			for (const cdk of sessionTask.cdks) {
+				const failedResult: GiftCodeResult = {
+					success: false,
+					message: `处理失败: ${error instanceof Error ? error.message : String(error)}`,
+					cdk,
+					fid: sessionTask.fid,
+				};
+				allResults.push(failedResult);
+				stats.failure++;
+			}
+		} finally {
+			// 清理会话资源
+			await session.cleanup();
+		}
+
+		// 玩家之间延迟 2 秒
+		if (i < sessionTasks.length - 1) {
+			await sleep(2000);
+		}
+	}
+
+	return allResults;
 };
 
 /**
@@ -391,9 +519,9 @@ async function main(): Promise<void> {
 				process.exit(1);
 			}
 
-			// 处理礼包码
+			// 处理礼包码（使用优化的流程）
 			const startTime = Date.now();
-			const results = await processGiftCodes(config.cdks, config.fids);
+			const results = await processGiftCodesOptimized(config.cdks, config.fids);
 			const endTime = Date.now();
 
 			// 计算成功和失败数量
