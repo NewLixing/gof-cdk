@@ -6,6 +6,29 @@ import { sleep } from "../utils";
 const logger = useLogger("SessionManager");
 
 /**
+ * 会话管理器配置常量
+ */
+const SESSION_CONSTANTS = {
+	/** 验证码识别失败最大重试次数 */
+	MAX_CAPTCHA_RETRIES: 3,
+	/** 验证码必须的长度 */
+	CAPTCHA_LENGTH: 4,
+	/** 重试延迟时间（毫秒） */
+	RETRY_DELAY: 1000,
+} as const;
+
+/**
+ * 验证验证码格式是否有效
+ * @param captchaCode - 验证码
+ * @returns 是否有效
+ */
+function isValidCaptcha(captchaCode: string): boolean {
+	// 验证码必须是4位且不包含中文字符
+	const hasChinese = /[\u4e00-\u9fa5]/.test(captchaCode);
+	return captchaCode.length === SESSION_CONSTANTS.CAPTCHA_LENGTH && !hasChinese;
+}
+
+/**
  * API服务接口（用于依赖注入）
  */
 interface ApiServiceInterface {
@@ -87,28 +110,25 @@ export class SessionManager {
 			};
 		}
 
-		// 最大重试次数（验证码识别失败）
-		const maxRetries = 3;
 		let currentRetry = 0;
 
-		while (currentRetry < maxRetries) {
+		while (currentRetry < SESSION_CONSTANTS.MAX_CAPTCHA_RETRIES) {
 			try {
 				// 获取验证码
 				const captcha_code = await this.apiService.getCaptcha(this.fid);
 				this.requestCount++;
 
-				// 验证码格式检查：必须是 4 位字母/数字
-				const hasChinese = /[\u4e00-\u9fa5]/.test(captcha_code);
-				if (captcha_code.length !== 4 || hasChinese) {
+				// 验证码格式检查
+				if (!isValidCaptcha(captcha_code)) {
 					currentRetry++;
 					logger.debug(
-						`验证码格式错误 (长度: ${captcha_code.length}, 包含中文: ${hasChinese})，重试 ${currentRetry}/${maxRetries}`,
+						`验证码格式错误 (长度: ${captcha_code.length})，重试 ${currentRetry}/${SESSION_CONSTANTS.MAX_CAPTCHA_RETRIES}`,
 					);
 
-					if (currentRetry >= maxRetries) {
+					if (currentRetry >= SESSION_CONSTANTS.MAX_CAPTCHA_RETRIES) {
 						return {
 							success: false,
-							message: `识别验证码失败，已达到最大重试次数(${maxRetries})`,
+							message: `识别验证码失败，已达到最大重试次数(${SESSION_CONSTANTS.MAX_CAPTCHA_RETRIES})`,
 							cdk,
 							fid: this.fid,
 							nickname: this.playerInfo.nickname,
@@ -117,7 +137,7 @@ export class SessionManager {
 					}
 
 					// 等待后重试
-					await sleep(1000);
+					await sleep(SESSION_CONSTANTS.RETRY_DELAY);
 					continue;
 				}
 
@@ -139,13 +159,13 @@ export class SessionManager {
 				currentRetry++;
 				logger.debug(
 					{ err: error },
-					`处理礼包码出错，重试 ${currentRetry}/${maxRetries}`,
+					`处理礼包码出错，重试 ${currentRetry}/${SESSION_CONSTANTS.MAX_CAPTCHA_RETRIES}`,
 				);
 
-				if (currentRetry >= maxRetries) {
+				if (currentRetry >= SESSION_CONSTANTS.MAX_CAPTCHA_RETRIES) {
 					return {
 						success: false,
-						message: `处理出错，已达到最大重试次数(${maxRetries})`,
+						message: `处理出错，已达到最大重试次数(${SESSION_CONSTANTS.MAX_CAPTCHA_RETRIES})`,
 						cdk,
 						fid: this.fid,
 						nickname: this.playerInfo.nickname,
@@ -154,7 +174,7 @@ export class SessionManager {
 				}
 
 				// 等待后重试
-				await sleep(1000);
+				await sleep(SESSION_CONSTANTS.RETRY_DELAY);
 			}
 		}
 
