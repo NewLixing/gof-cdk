@@ -1,6 +1,11 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { apiService, processSingleCode, removeSuccessfulTask } from "./api";
+import {
+	apiService,
+	processSingleCode,
+	removeSuccessfulTask,
+	saveFailedTask,
+} from "./api";
 import { SessionManager } from "./api/session-manager";
 import { loadConfig } from "./config";
 import { colors, useLogger } from "./logger";
@@ -165,7 +170,7 @@ const processGiftCodesOptimized = async (
 			const initialized = await session.initialize();
 
 			if (!initialized) {
-				// 初始化失败，记录所有礼包码为失败
+				// 初始化失败，记录所有礼包码为失败，并保存失败任务
 				for (const cdk of sessionTask.cdks) {
 					const failedResult: GiftCodeResult = {
 						success: false,
@@ -175,6 +180,12 @@ const processGiftCodesOptimized = async (
 					};
 					allResults.push(failedResult);
 					stats.failure++;
+
+					// 保存失败任务
+					await saveFailedTask({
+						fid: sessionTask.fid,
+						cdk,
+					});
 				}
 				continue;
 			}
@@ -183,7 +194,7 @@ const processGiftCodesOptimized = async (
 			const results = await session.processMultipleCodes(sessionTask.cdks);
 			allResults.push(...results);
 
-			// 更新统计信息
+			// 更新统计信息，保存失败的任务
 			for (const result of results) {
 				if (result.success) {
 					if (result.message.includes("已领过")) {
@@ -192,6 +203,12 @@ const processGiftCodesOptimized = async (
 						stats.success++;
 					}
 				} else {
+					// 保存失败任务
+					await saveFailedTask({
+						fid: result.fid,
+						cdk: result.cdk,
+					});
+
 					if (
 						result.message.includes("TIMEOUT") ||
 						result.message.includes("超时")
@@ -205,7 +222,7 @@ const processGiftCodesOptimized = async (
 		} catch (error) {
 			logger.error({ err: error }, `处理玩家 ${sessionTask.fid} 时出错`);
 
-			// 记录所有礼包码为失败
+			// 记录所有礼包码为失败，并保存失败任务
 			for (const cdk of sessionTask.cdks) {
 				const failedResult: GiftCodeResult = {
 					success: false,
@@ -215,6 +232,12 @@ const processGiftCodesOptimized = async (
 				};
 				allResults.push(failedResult);
 				stats.failure++;
+
+				// 保存失败任务
+				await saveFailedTask({
+					fid: sessionTask.fid,
+					cdk,
+				});
 			}
 		} finally {
 			// 清理会话资源

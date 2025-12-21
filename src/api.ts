@@ -706,4 +706,4 @@ async function removeSuccessfulTask(
 }
 
 // 导出函数供其他模块使用
-export { removeSuccessfulTask };
+export { removeSuccessfulTask, saveFailedTask };
