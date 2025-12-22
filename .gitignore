@@ -5,3 +5,18 @@ failed_tasks
 .env
 
 dist/
+
+# Frontend build
+frontend/dist
+frontend/node_modules
+frontend/.env
+
+# Workers build
+workers/dist
+workers/node_modules
+workers/.wrangler
+workers/.dev.vars
+
+# IDE
+.vscode
+.idea
