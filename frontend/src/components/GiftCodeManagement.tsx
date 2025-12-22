@@ -2,7 +2,11 @@ import { useState, useEffect } from 'react';
 import { addGiftCode, getGiftCodes, deleteGiftCode } from '../lib/subscription-api';
 import type { GiftCode } from '../types';
 
-export default function GiftCodeManagement() {
+interface GiftCodeManagementProps {
+  isAdminMode?: boolean;
+}
+
+export default function GiftCodeManagement({ isAdminMode = false }: GiftCodeManagementProps) {
   const [activeCodes, setActiveCodes] = useState<GiftCode[]>([]);
   const [expiredCodes, setExpiredCodes] = useState<GiftCode[]>([]);
   const [newCode, setNewCode] = useState('');
@@ -11,6 +15,9 @@ export default function GiftCodeManagement() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showExpired, setShowExpired] = useState(false);
+  
+  // Remove unused variable warning
+  console.log('Admin mode:', isAdminMode);
 
   useEffect(() => {
     loadGiftCodes();

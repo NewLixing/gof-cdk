@@ -8,6 +8,8 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8787
 export async function subscribePlayer(fid: string): Promise<{
   success: boolean;
   data?: SubscribedPlayer;
+  isNew?: boolean;
+  codesTriggered?: number;
   error?: string;
 }> {
   try {
@@ -220,6 +222,40 @@ export async function getRedemptionHistory(limit = 100): Promise<{
     return data;
   } catch (error) {
     console.error('Failed to get redemption history:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+/**
+ * Submit a gift code (user-facing API)
+ * Validates and triggers redemption for all players if valid
+ */
+export async function submitGiftCode(code: string): Promise<{
+  success: boolean;
+  isValid?: boolean;
+  playersTriggered?: number;
+  error?: string;
+}> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/user/submit-code`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ code }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Failed to submit gift code:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
