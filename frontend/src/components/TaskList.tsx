@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { getTaskStatus } from '../lib/api';
-import type { PlayerTask, TaskStatus } from '../types';
+import type { PlayerTask } from '../types';
 import TaskCard from './TaskCard';
 
 interface TaskListProps {
