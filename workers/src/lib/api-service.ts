@@ -85,9 +85,16 @@ export class ApiService {
    */
   private async recognizeCaptcha(base64Image: string): Promise<string> {
     try {
+      // Convert base64 to Uint8Array (Works in Workers runtime)
+      const binaryString = atob(base64Image);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      
       // Use LLaVA model for image recognition
       const response = await this.env.AI.run('@cf/llava-hf/llava-1.5-7b-hf', {
-        image: Array.from(Buffer.from(base64Image, 'base64')),
+        image: Array.from(bytes),
         prompt: 'This is a 4-digit captcha containing only numbers and letters. Please extract the exact 4 characters you see. Only output those 4 characters, nothing else.',
         max_tokens: 10,
       }) as { description: string };
