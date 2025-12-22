@@ -148,9 +148,10 @@ function md5(string: string): string {
   }
 
   function hex(x: number[]) {
+    const result: string[] = [];
     for (let i = 0; i < x.length; i++)
-      x[i] = rhex(x[i]);
-    return x.join('');
+      result.push(rhex(x[i]));
+    return result.join('');
   }
 
   return hex(md51(string));

@@ -41,9 +41,10 @@ export class ApiService {
   }
 
   /**
-   * Get captcha image and recognize using Workers AI
+   * Get captcha image and return both ID and image
+   * For testing, returns raw captcha data
    */
-  async getCaptcha(fid: string): Promise<string> {
+  async getCaptcha(fid: string, code?: string): Promise<{ captchaId: string; image: string } | string> {
     try {
       const inputData = {
         fid,
@@ -69,11 +70,19 @@ export class ApiService {
         return '';
       }
 
+      // If code is provided, return raw captcha data for testing
+      if (code !== undefined) {
+        return {
+          captchaId: data.data.id || String(Date.now()),
+          image: data.data.img,
+        };
+      }
+
       // Use Workers AI to recognize captcha
-      const captchaCode = await this.recognizeCaptcha(data.data.img);
-      console.log('Recognized captcha:', captchaCode);
+      const captchaResult = await this.recognizeCaptcha(data.data.img);
+      console.log('Recognized captcha:', captchaResult.recognized);
       
-      return captchaCode;
+      return captchaResult.recognized;
     } catch (error) {
       console.error('Failed to get captcha:', error);
       return '';
@@ -82,8 +91,9 @@ export class ApiService {
 
   /**
    * Recognize captcha using Cloudflare Workers AI
+   * Made public for testing purposes
    */
-  private async recognizeCaptcha(base64Image: string): Promise<string> {
+  async recognizeCaptcha(base64Image: string): Promise<{ recognized: string; raw: string }> {
     try {
       // Convert base64 to Uint8Array (Works in Workers runtime)
       const binaryString = atob(base64Image);
@@ -104,11 +114,32 @@ export class ApiService {
       const alphanumeric = captchaText.replace(/[^a-zA-Z0-9]/g, '');
       
       // Return first 4 characters if available
-      return alphanumeric.substring(0, 4).toUpperCase();
+      const recognized = alphanumeric.substring(0, 4).toUpperCase();
+      
+      return {
+        recognized,
+        raw: response.description,
+      };
     } catch (error) {
       console.error('Failed to recognize captcha:', error);
-      return '';
+      return {
+        recognized: '',
+        raw: '',
+      };
     }
+  }
+
+  /**
+   * Internal method to get just the captcha code string
+   */
+  private async getCaptchaCode(fid: string): Promise<string> {
+    const result = await this.getCaptcha(fid);
+    if (typeof result === 'string') {
+      return result;
+    }
+    // Should not happen, but handle it
+    const recognized = await this.recognizeCaptcha(result.image);
+    return recognized.recognized;
   }
 
   /**
@@ -188,7 +219,7 @@ export class ApiService {
     while (currentRetry < MAX_RETRIES) {
       try {
         // Get captcha
-        const captchaCode = await this.getCaptcha(fid);
+        const captchaCode = await this.getCaptchaCode(fid);
 
         // Validate captcha format (must be 4 characters)
         if (captchaCode.length !== 4) {

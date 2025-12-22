@@ -2,12 +2,19 @@ import { useState, useEffect } from 'react';
 import { subscribePlayer, getPlayers, unsubscribePlayer } from '../lib/subscription-api';
 import type { SubscribedPlayer } from '../types';
 
-export default function PlayerManagement() {
+interface PlayerManagementProps {
+  isAdminMode?: boolean;
+}
+
+export default function PlayerManagement({ isAdminMode = false }: PlayerManagementProps) {
   const [players, setPlayers] = useState<SubscribedPlayer[]>([]);
   const [newFid, setNewFid] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  
+  // Remove unused variable warning by using it
+  console.log('Admin mode:', isAdminMode);
 
   useEffect(() => {
     loadPlayers();

@@ -109,4 +109,5 @@ export interface ApiResponse<T> {
  */
 export interface Captcha {
   img: string;
+  id?: string;
 }

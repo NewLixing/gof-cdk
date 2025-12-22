@@ -24,7 +24,7 @@ app.get('/', (c) => {
 
 /**
  * POST /api/players/subscribe
- * Subscribe a player
+ * Subscribe a player with auto-redemption for new players
  */
 app.post('/api/players/subscribe', async (c) => {
   try {
@@ -35,11 +35,13 @@ app.post('/api/players/subscribe', async (c) => {
     }
 
     const subscriptionManager = new SubscriptionManager(c.env);
-    const player = await subscriptionManager.subscribePlayer(body.fid);
+    const result = await subscriptionManager.subscribePlayer(body.fid);
 
     return c.json({
       success: true,
-      data: player,
+      data: result.player,
+      isNew: result.isNew,
+      codesTriggered: result.codesTriggered,
     });
   } catch (error) {
     console.error('Failed to subscribe player:', error);
@@ -106,7 +108,7 @@ app.delete('/api/players/:fid', async (c) => {
 
 /**
  * POST /api/giftcodes
- * Add a gift code
+ * Add a gift code (admin function)
  */
 app.post('/api/giftcodes', async (c) => {
   try {
@@ -125,6 +127,34 @@ app.post('/api/giftcodes', async (c) => {
     });
   } catch (error) {
     console.error('Failed to add gift code:', error);
+    return c.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }, 500);
+  }
+});
+
+/**
+ * POST /api/user/submit-code
+ * User submit gift code with validation and auto-redemption
+ */
+app.post('/api/user/submit-code', async (c) => {
+  try {
+    const body = await c.req.json<{ code: string }>();
+    
+    if (!body.code || typeof body.code !== 'string') {
+      return c.json({ error: 'Invalid gift code' }, 400);
+    }
+
+    const subscriptionManager = new SubscriptionManager(c.env);
+    const result = await subscriptionManager.validateAndSubmitGiftCode(body.code);
+
+    return c.json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error('Failed to submit gift code:', error);
     return c.json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -330,6 +360,154 @@ app.get('/api/history', async (c) => {
     });
   } catch (error) {
     console.error('Failed to get history:', error);
+    return c.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }, 500);
+  }
+});
+
+/**
+ * GET /api/players/:fid/redemptions
+ * Get redemption history for a specific player
+ */
+app.get('/api/players/:fid/redemptions', async (c) => {
+  try {
+    const fid = c.req.param('fid');
+    
+    if (!fid) {
+      return c.json({ error: 'Player ID is required' }, 400);
+    }
+
+    const subscriptionManager = new SubscriptionManager(c.env);
+    const redemptions = await subscriptionManager.getPlayerRedemptions(fid);
+
+    return c.json({
+      success: true,
+      data: redemptions,
+    });
+  } catch (error) {
+    console.error('Failed to get player redemptions:', error);
+    return c.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }, 500);
+  }
+});
+
+/**
+ * GET /api/test/player-info
+ * Test: Get player info
+ */
+app.get('/api/test/player-info', async (c) => {
+  try {
+    const fid = c.req.query('fid');
+    
+    if (!fid) {
+      return c.json({ error: 'Player ID is required' }, 400);
+    }
+
+    const subscriptionManager = new SubscriptionManager(c.env);
+    const playerInfo = await subscriptionManager.testFullRedemption(fid, 'TEST');
+
+    return c.json({
+      success: true,
+      data: playerInfo.playerInfo || null,
+    });
+  } catch (error) {
+    console.error('Failed to get player info:', error);
+    return c.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }, 500);
+  }
+});
+
+/**
+ * POST /api/test/get-captcha
+ * Test: Get captcha image
+ */
+app.post('/api/test/get-captcha', async (c) => {
+  try {
+    const body = await c.req.json<{ fid: string; code: string }>();
+    
+    if (!body.fid || !body.code) {
+      return c.json({ error: 'FID and code are required' }, 400);
+    }
+
+    const subscriptionManager = new SubscriptionManager(c.env);
+    const captcha = await subscriptionManager.testGetCaptcha(body.fid, body.code);
+
+    if (!captcha) {
+      return c.json({ error: 'Failed to get captcha' }, 500);
+    }
+
+    return c.json({
+      success: true,
+      data: captcha,
+    });
+  } catch (error) {
+    console.error('Failed to get captcha:', error);
+    return c.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }, 500);
+  }
+});
+
+/**
+ * POST /api/test/recognize-captcha
+ * Test: Recognize captcha with AI
+ */
+app.post('/api/test/recognize-captcha', async (c) => {
+  try {
+    const body = await c.req.json<{ image: string }>();
+    
+    if (!body.image) {
+      return c.json({ error: 'Image is required' }, 400);
+    }
+
+    const subscriptionManager = new SubscriptionManager(c.env);
+    const result = await subscriptionManager.testRecognizeCaptcha(body.image);
+
+    if (!result) {
+      return c.json({ error: 'Failed to recognize captcha' }, 500);
+    }
+
+    return c.json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error('Failed to recognize captcha:', error);
+    return c.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }, 500);
+  }
+});
+
+/**
+ * POST /api/test/redeem
+ * Test: Full redemption process
+ */
+app.post('/api/test/redeem', async (c) => {
+  try {
+    const body = await c.req.json<{ fid: string; code: string }>();
+    
+    if (!body.fid || !body.code) {
+      return c.json({ error: 'FID and code are required' }, 400);
+    }
+
+    const subscriptionManager = new SubscriptionManager(c.env);
+    const result = await subscriptionManager.testFullRedemption(body.fid, body.code);
+
+    return c.json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error('Failed to test redemption:', error);
     return c.json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
