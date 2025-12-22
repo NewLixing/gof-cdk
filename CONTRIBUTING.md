@@ -131,11 +131,6 @@ gof-cdk/
 │   │   └── index.ts    # 入口文件
 │   └── package.json
 │
-├── src/                # CLI 版本（原版）
-│   ├── api/
-│   ├── main.ts
-│   └── ...
-│
 └── docs/               # 文档
 ```
 
@@ -144,9 +139,6 @@ gof-cdk/
 ### 运行测试
 
 ```bash
-# CLI 版本
-npm test
-
 # Workers
 cd workers
 npm test

@@ -16,301 +16,277 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
 ![Cloudflare](https://img.shields.io/badge/Cloudflare-Workers-orange)
 
-<h3>无尽冬日礼包码批量处理系统</h3>
-<p>基于 Cloudflare Pages + Workers + Workers AI 的现代化 Web 应用</p>
+<h3>无尽冬日礼包码自动领取系统</h3>
+<p>基于 Cloudflare Pages + Workers + Workers AI 的订阅制自动领取平台</p>
 
 </div>
 
 ## 📋 目录
 
-- [GOF-CDK](#gof-cdk)
-  - [📋 目录](#-目录)
-  - [🚀 项目简介](#-项目简介)
-  - [🌟 新版本特性 (v2.0)](#-新版本特性-v20)
-  - [✨ 主要特性](#-主要特性)
-  - [🏗️ 系统架构](#️-系统架构)
-  - [🛠️ 技术栈](#️-技术栈)
-  - [📥 安装与部署](#-安装与部署)
-  - [📝 使用方法](#-使用方法)
-  - [⚙️ CLI版本使用 (传统模式)](#️-cli版本使用-传统模式)
-  - [📊 性能优化](#-性能优化)
-  - [⚠️ 注意事项](#️-注意事项)
-  - [👥 贡献指南](#-贡献指南)
-  - [📄 许可证](#-许可证)
-  - [⚠️ 免责声明](#️-免责声明)
+- [🚀 项目简介](#-项目简介)
+- [✨ 核心特性](#-核心特性)
+- [🏗️ 系统架构](#️-系统架构)
+- [🛠️ 技术栈](#️-技术栈)
+- [📥 快速开始](#-快速开始)
+- [📝 使用方法](#-使用方法)
+- [📊 API 文档](#-api-文档)
+- [⚙️ 配置说明](#️-配置说明)
+- [⚠️ 注意事项](#️-注意事项)
+- [👥 贡献指南](#-贡献指南)
+- [📄 许可证](#-许可证)
 
 ## 🚀 项目简介
 
-GOF-CDK 是一个用于处理《无尽冬日》游戏礼包码的现代化平台。项目提供两种使用方式：
+GOF-CDK 是一个现代化、零运维的《无尽冬日》游戏礼包码自动领取平台。用户可以订阅玩家ID，系统自动为订阅的玩家领取所有礼包码，并智能管理礼包码的有效期。
 
-1. **Web 版 (v2.0)** - 基于 Cloudflare 的全栈 Web 应用，零运维，全球加速
-2. **CLI 版 (v1.0)** - 命令行工具，适合本地批量处理
+**核心理念：**
+- 🎯 **订阅制** - 订阅玩家ID，无需每次手动输入
+- 🤖 **自动化** - 系统自动领取，智能识别验证码
+- 💡 **智能管理** - 自动检测过期礼包码，防重复领取
 
-## 🌟 新版本特性 (v2.0)
+## ✨ 核心特性
 
-### Web UI 版本
+### 🌐 Web 界面
+- **玩家订阅管理** - 添加/移除订阅玩家，查看订阅列表
+- **礼包码管理** - 添加礼包码，自动分类（有效/过期）
+- **自动领取控制** - 一键触发自动领取，实时查看结果
 
-基于 **Cloudflare Pages + Workers + Workers AI** 构建的现代化 Web 应用：
+### 🤖 智能特性
+- **Workers AI 验证码识别** - 使用 LLaVA 1.5 7B 模型自动识别验证码
+- **自动过期检测** - 识别过期礼包码（40007错误）并自动移至过期列表
+- **防重复领取** - 智能跟踪领取记录，避免重复领取
 
-- 🌐 **Web 界面** - 用户友好的可视化操作界面
-- 🤖 **AI 验证码识别** - 使用 Cloudflare Workers AI 自动识别验证码
-- 📊 **实时进度追踪** - 批量任务实时进度展示
-- 💾 **云端存储** - KV + D1 数据库持久化存储
-- 🚀 **零运维部署** - 一键部署到 Cloudflare，自动扩展
-- 🌍 **全球 CDN 加速** - 基于 Cloudflare 网络，全球访问更快
-- 💰 **完全免费** - 使用 Cloudflare 免费额度，无需服务器
-
-## ✨ 主要特性
-
-### Web 版特性
-- ✅ 可视化批量处理界面
-- 🎯 支持多玩家 ID 与多礼包码同时处理
-- 📈 实时任务进度与结果展示
-- 🤖 AI 自动识别验证码（Workers AI）
-- 💾 任务状态持久化（KV 存储）
-- 📚 历史记录查询（D1 数据库）
-- 🔄 自动重试机制
-- 🌐 全球 CDN 加速访问
-
-### CLI 版特性
-- ✅ 支持处理多个礼包码和多个玩家账号
-- 🚀 智能会话管理 - 按玩家分组，减少95%的玩家信息重复请求
-- 🔄 自动重试机制，提高领取成功率
-- 📊 详细的日志记录和统计报告
-- 🔧 基于环境变量的简单配置
-- 🔍 本地验证码识别
-- 💾 失败任务保存与重新处理
+### ☁️ 云端特性
+- **零运维** - 完全基于 Cloudflare 平台，无需服务器管理
+- **全球加速** - Cloudflare CDN + 边缘计算，延迟 <50ms
+- **自动扩展** - Workers 自动应对流量高峰
+- **完全免费** - 使用 Cloudflare 免费额度（100k 请求/天）
 
 ## 🏗️ 系统架构
-
-### Web 版架构
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    Cloudflare Pages (前端)                    │
 │              React + TypeScript + Tailwind CSS              │
+│                                                               │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
+│  │ 玩家订阅管理  │  │ 礼包码管理    │  │ 自动领取控制  │      │
+│  └──────────────┘  └──────────────┘  └──────────────┘      │
 └────────────────────┬────────────────────────────────────────┘
-                     │ HTTP/JSON API
+                     │ REST API
 ┌────────────────────▼────────────────────────────────────────┐
 │                 Cloudflare Workers (后端)                    │
 │                  Hono + TypeScript                          │
 │  ┌─────────────┐  ┌──────────────┐  ┌──────────────────┐   │
-│  │  KV 存储    │  │  D1 数据库   │  │  Workers AI OCR  │   │
-│  │  (任务状态) │  │  (历史记录)  │  │  (验证码识别)    │   │
+│  │  KV 存储    │  │  D1 数据库   │  │  Workers AI      │   │
+│  │  (订阅/码)  │  │  (历史记录)  │  │  (验证码识别)    │   │
 │  └─────────────┘  └──────────────┘  └──────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
 ```
 
+### 数据流程
+
+1. **订阅玩家** → 存储到 KV → 持久化到 D1
+2. **添加礼包码** → 存储到 KV（有效列表）
+3. **自动领取** → 为每个订阅玩家领取每个礼包码
+   - 获取验证码 → Workers AI 识别 → 提交领取
+   - 成功 → 记录到 KV
+   - 过期 → 移至过期列表
+4. **查询历史** → 从 D1 读取
+
 ## 🛠️ 技术栈
 
-### Web 版 (v2.0)
+### 前端
+- **React 18** - UI 框架
+- **TypeScript** - 类型安全
+- **Tailwind CSS** - 样式框架
+- **Vite** - 构建工具
 
-**前端:**
-- React 18
-- TypeScript
-- Tailwind CSS
-- Vite
+### 后端
+- **Cloudflare Workers** - 无服务器运行时
+- **Hono** - 轻量级 Web 框架
+- **Workers AI** - AI 模型推理（LLaVA 1.5 7B）
+- **KV Storage** - 键值存储
+- **D1 Database** - SQL 数据库
 
-**后端:**
-- Cloudflare Workers
-- Hono (轻量级 Web 框架)
-- Workers AI (验证码识别)
-- KV Storage (任务状态)
-- D1 Database (历史记录)
+## 📥 快速开始
 
-### CLI 版 (v1.0)
+详细部署指南请查看 [DEPLOYMENT.md](./DEPLOYMENT.md) 或 [QUICKSTART.md](./QUICKSTART.md)
 
-- **TypeScript** - 主要开发语言
-- **Axios** - HTTP请求处理
-- **Crypto-JS** - 加密处理
-- **Dotenv** - 环境变量管理
-- **Zod** - 数据验证
-- **DdddOcr** - 验证码识别
+### 前置要求
+- Node.js 18+
+- Cloudflare 账号（免费）
+- Wrangler CLI
 
-## 📥 安装与部署
-
-### Web 版部署
-
-详细部署指南请查看 [DEPLOYMENT.md](./DEPLOYMENT.md)
-
-快速开始：
+### 5分钟部署
 
 ```bash
-# 1. 部署 Workers 后端
+# 1. 安装 Wrangler
+npm install -g wrangler
+wrangler login
+
+# 2. 部署 Workers 后端
 cd workers
 npm install
-wrangler login
+# 创建 KV 和 D1（按照 DEPLOYMENT.md 配置）
 npm run deploy
 
-# 2. 部署 Pages 前端
+# 3. 部署 Pages 前端
 cd ../frontend
 npm install
 npm run build
 wrangler pages deploy dist --project-name=gof-cdk
 ```
 
-### CLI 版安装
-
-详见下方 "CLI版本使用" 部分。
-
 ## 📝 使用方法
 
-### Web 版使用
+### 三步使用流程
 
-1. 访问部署的 Pages URL
-2. 在左侧表单中输入：
-   - 玩家 ID 列表（多个用逗号或换行分隔）
-   - 礼包码列表（多个用逗号或换行分隔）
-3. 点击"开始批量处理"
-4. 在右侧实时查看处理进度和结果
+1. **订阅玩家** 
+   - 在左侧"玩家订阅管理"输入玩家ID
+   - 点击"订阅"按钮
+   - 系统自动获取并保存玩家信息
 
-### API 接口
+2. **添加礼包码**
+   - 在中间"礼包码管理"输入礼包码
+   - 可选添加备注说明
+   - 点击"添加礼包码"
+
+3. **自动领取**
+   - 在右侧"自动领取控制"点击"立即执行"
+   - 系统自动为所有订阅玩家领取所有有效礼包码
+   - 查看领取结果摘要
+
+### 自动化特性
+
+- ✅ **自动跳过** - 已领取的礼包码自动跳过
+- ✅ **自动检测** - 过期礼包码自动移至过期列表
+- ✅ **自动识别** - Workers AI 自动识别验证码
+- ✅ **自动重试** - 验证码识别失败自动重试（最多3次）
+
+## 📊 API 文档
+
+### 玩家订阅管理
 
 ```bash
-# 提交批量任务
-POST /api/batch
-Body: { "fids": ["123456"], "cdks": ["WJDR666"] }
+# 订阅玩家
+POST /api/players/subscribe
+Body: { "fid": "123456789" }
 
-# 查询任务状态
-GET /api/status/:taskId
+# 获取订阅列表
+GET /api/players
 
-# 获取历史记录
-GET /api/history?limit=100
+# 取消订阅
+DELETE /api/players/:fid
 ```
 
-## ⚙️ CLI版本使用 (传统模式)
-## ⚙️ CLI版本使用 (传统模式)
+### 礼包码管理
 
-### 前置条件
+```bash
+# 添加礼包码
+POST /api/giftcodes
+Body: { "code": "WJDR666", "description": "测试码" }
 
-- Node.js (v16+)
-- npm 或 pnpm
+# 获取礼包码列表
+GET /api/giftcodes
+Response: { "active": [...], "expired": [...] }
 
-### 安装步骤
+# 删除礼包码
+DELETE /api/giftcodes/:code
+```
 
-1. **克隆仓库**
+### 自动领取
 
-   ```bash
-   git clone https://github.com/NewLixing/gof-cdk.git
-   cd gof-cdk
-   ```
+```bash
+# 触发自动领取
+POST /api/redeem/auto
 
-2. **安装依赖**
+# 查询领取历史
+GET /api/redemptions?limit=100
+```
 
-   ```bash
-   npm install
-   # 或使用 pnpm
-   pnpm install
-   ```
+## ⚙️ 配置说明
 
-3. **配置环境变量**
+### Workers 配置
 
-   ```bash
-   cp .env.example .env
-   ```
+在 `workers/wrangler.toml` 中配置：
 
-   编辑`.env`文件，配置必要参数。
+```toml
+[[kv_namespaces]]
+binding = "TASKS_KV"
+id = "your_kv_namespace_id"  # 替换为你的 KV ID
 
-### CLI 使用方法
+[[d1_databases]]
+binding = "DB"
+database_name = "gof-cdk-history"
+database_id = "your_d1_database_id"  # 替换为你的 D1 ID
 
-### CLI 使用方法
+[ai]
+binding = "AI"
+```
 
-1. **构建项目**
+### 前端配置
 
-   ```bash
-   npm run build
-   # 或使用 pnpm
-   pnpm build
-   ```
+在 `frontend/.env` 中配置：
 
-2. **运行程序**
+```bash
+VITE_API_BASE_URL=https://your-worker.workers.dev
+```
 
-   正常处理礼包码：
+## 💰 费用说明
 
-   ```bash
-   npm start
-   # 或使用 pnpm
-   pnpm start
-   ```
+使用 Cloudflare 免费计划：
 
-   处理之前失败的任务：
+| 服务 | 免费额度 | 说明 |
+|------|----------|------|
+| Workers | 100,000 请求/天 | 足够个人使用 |
+| Pages | 无限请求 | 静态资源 |
+| KV | 100,000 读/天 | 键值存储 |
+| D1 | 100,000 读/天 | SQL 数据库 |
+| Workers AI | 10,000 推理/天 | AI 模型 |
 
-   ```bash
-   npm run start:failed
-   # 或使用 pnpm
-   pnpm start:failed
-   ```
-
-### CLI 配置详解
-
-### CLI 配置详解
-
-在`.env`文件中可配置以下参数：
-
-| 参数 | 说明 | 默认值 |
-|------|------|--------|
-| `CDK_LIST` | 礼包码列表，多个用逗号分隔 | - |
-| `FID_LIST` | 玩家ID列表，多个用逗号分隔 | - |
-| `MAX_RETRIES` | 请求最大重试次数 | `5` |
-| `TIMEOUT` | 请求超时时间（毫秒） | `20000` |
-| `DEVELOPMENT_MODE` | 开发模式开关，开启后显示所有日志 | `false` |
-| `API_BASE_URL` | API服务基础URL | `https://wjdr-giftcode-api.campfiregames.cn/api` |
-| `SIGN_SALT` | API签名盐值 | `Uiv#87#SPan.ECsp` |
-
-### CLI 失败任务处理
-
-- 系统会自动重试失败的任务，最多重试3次
-- 如果验证码格式不正确（长度不为4或包含中文），会自动重试
-- 所有失败的任务会保存到 `failed_tasks` 目录下，文件名格式为 `failed_tasks_YYYY-MM-DD.json`
-- 可以使用 `npm run start:failed` 命令重新处理失败的任务
-
-## 📊 性能优化
-
-### CLI 版性能优化
-
-本工具采用了**会话管理优化策略**，相比传统的逐任务处理方式，大幅提升了处理效率：
-
-**优化原理：**
-- 按玩家分组，每个玩家只获取一次信息，然后批量处理该玩家的所有礼包码
-- 10个玩家 × 20个礼包码 = 10次玩家信息请求（**减少95%**）
-
-**性能提升：** (以 10个玩家 × 20个礼包码 为例)
-
-| 指标 | 优化前 | 优化后 | 提升 |
-|------|--------|--------|------|
-| 玩家信息请求 | 200次 | 10次 | **减少95%** |
-| 总API请求数 | 约600次 | 约410次 | **减少31.7%** |
-| 执行时间 | 约200秒 | 约135秒 | **减少32.5%** |
-
-### Web 版性能优势
-
-- 🚀 **边缘计算** - Cloudflare Workers 全球边缘节点，延迟更低
-- 🌐 **CDN 加速** - Pages 静态资源全球 CDN 分发
-- 📈 **自动扩展** - 无需管理服务器，自动应对流量高峰
-- 💾 **高速存储** - KV 和 D1 优化的全球分布式存储
+对于个人和中小型应用**完全免费**！
 
 ## ⚠️ 注意事项
 
-- 请确保礼包码和玩家ID格式正确
-- 批次大小建议设置为2-5，避免请求过于频繁触发限制
-- 批次间延迟建议设置为3000毫秒以上
+### 使用限制
+- 每个玩家处理间隔 2 秒，避免触发游戏风控
+- 每个礼包码处理间隔 500ms
+- 验证码识别最多重试 3 次
+
+### 安全建议
+- 生产环境配置 CORS 限制域名
+- 不要在前端暴露敏感信息
+- 定期清理过期数据
+
+### 法律合规
+- ⚖️ 本项目仅供学习研究使用
+- ⚖️ 请遵守游戏服务条款
+- ⚖️ 不得用于任何商业用途
+- ⚖️ 使用者需自行承担所有责任
 
 ## 👥 贡献指南
 
-欢迎提交Issue和Pull Request，共同改进这个项目。
+欢迎贡献！请查看 [CONTRIBUTING.md](./CONTRIBUTING.md)
 
-1. Fork 本仓库
-2. 创建您的特性分支 (`git checkout -b feature/amazing-feature`)
-3. 提交您的更改 (`git commit -m '添加了一些很棒的功能'`)
-4. 推送到分支 (`git push origin feature/amazing-feature`)
-5. 打开一个Pull Request
+1. Fork 项目
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 开启 Pull Request
 
 ## 📄 许可证
 
-本项目基于MIT许可证开源，详见[LICENSE](LICENSE)文件。
+本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
 
-## ⚠️ 免责声明
+---
 
-本项目仅供学习和研究目的使用，不得用于任何商业用途。使用本项目进行任何商业行为所产生的后果，需自行承担全部责任。作者不对使用本项目所导致的任何直接或间接损失负责。
+<div align="center">
 
-请遵守相关法律法规和游戏服务条款，合理使用本工具。
+**⭐ 如果这个项目对你有帮助，请给个 Star！**
+
+Made with ❤️ by [NewLixing](https://github.com/NewLixing)
+
+Powered by [Cloudflare](https://www.cloudflare.com/)
+
+</div>

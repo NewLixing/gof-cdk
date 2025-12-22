@@ -7,29 +7,54 @@
 
 ## [2.0.0] - 2024-12-22
 
+### 重大变更
+
+**⚠️ 完全移除 CLI 版本，全面采用 Web 架构**
+- 移除所有 CLI 相关代码（`src/` 目录）
+- 移除 ddddocr-node 依赖
+- 移除根目录的 package.json、tsconfig.json 等 CLI 配置
+- 改为纯 Web 订阅制自动领取系统
+
 ### 新增
 
-#### Web 版本
+#### 订阅制自动领取系统
+- 🎯 **玩家订阅管理** - 订阅玩家ID，系统自动管理
+- 🎁 **礼包码管理** - 集中管理礼包码，自动分类有效/过期
+- ⚡ **自动领取功能** - 一键为所有订阅玩家领取所有礼包码
+- 🤖 **智能过期检测** - 自动识别并移动过期礼包码
+- 🔄 **防重复领取** - 智能跟踪领取记录
+
+#### Web 界面
 - 🌐 基于 Cloudflare Pages 的现代化 Web UI
 - 🤖 集成 Cloudflare Workers AI 进行验证码识别
-- 📊 实时任务进度追踪和展示
-- 💾 使用 KV Storage 存储任务状态
+- 📊 订阅制三栏布局（玩家管理/礼包码管理/自动领取）
+- 💾 使用 KV Storage 存储订阅和礼包码
 - 📚 使用 D1 Database 存储历史记录
 - 🚀 Cloudflare Workers 无服务器后端
 - 🎨 基于 React + TypeScript + Tailwind CSS 的前端
 - 📱 响应式设计，支持移动端和桌面端
 
 #### API 接口
-- `POST /api/batch` - 批量提交任务
-- `GET /api/status/:taskId` - 查询任务状态
-- `GET /api/history` - 获取历史记录
+**玩家订阅:**
+- `POST /api/players/subscribe` - 订阅玩家
+- `GET /api/players` - 获取订阅列表
+- `DELETE /api/players/:fid` - 取消订阅
+
+**礼包码管理:**
+- `POST /api/giftcodes` - 添加礼包码
+- `GET /api/giftcodes` - 获取礼包码（有效/过期）
+- `DELETE /api/giftcodes/:code` - 删除礼包码
+
+**自动领取:**
+- `POST /api/redeem/auto` - 触发自动领取
+- `GET /api/redemptions` - 查询领取历史
 
 #### 文档
-- ✅ 新增 `DEPLOYMENT.md` - 详细部署指南
-- ✅ 新增 `QUICKSTART.md` - 快速开始指南
-- ✅ 新增 `ARCHITECTURE.md` - 系统架构文档
-- ✅ 新增 `CONTRIBUTING.md` - 贡献指南
-- ✅ 更新 `README.md` - 添加 Web 版本说明
+- ✅ 更新 `README.md` - 订阅制系统说明
+- ✅ 更新 `DEPLOYMENT.md` - 部署指南
+- ✅ 更新 `QUICKSTART.md` - 快速开始指南
+- ✅ 更新 `ARCHITECTURE.md` - 系统架构文档
+- ✅ 更新 `CONTRIBUTING.md` - 贡献指南
 - ✅ 各子项目的 `README.md`
 
 ### 改进
@@ -38,6 +63,7 @@
 - 📈 自动扩展，无需关心服务器容量
 - 💰 完全免费，使用 Cloudflare 免费额度
 - 🔒 更安全的架构，Workers 运行在隔离环境
+- 🎯 更简单的使用流程，订阅后自动管理
 
 ### 技术栈
 - **前端**: React 18, TypeScript, Tailwind CSS, Vite
@@ -46,7 +72,33 @@
 - **存储**: KV Storage, D1 Database
 - **部署**: Cloudflare Pages, Wrangler CLI
 
-## [1.0.0] - 2024-XX-XX
+### 移除
+- ❌ CLI 版本代码（`src/` 目录）
+- ❌ ddddocr-node 依赖
+- ❌ 本地验证码识别
+- ❌ 根目录 package.json 和相关配置文件
+- ❌ 命令行工具相关功能
+
+---
+
+## 架构变化
+
+**v1.0（已废弃）:**
+```
+CLI 命令行 → 本地处理 → ddddocr 识别 → 批量执行
+```
+
+**v2.0（当前）:**
+```
+Web UI → 订阅管理 → 礼包码管理 → 自动领取 → Workers AI 识别
+          ↓            ↓              ↓           ↓
+      KV存储       KV存储         D1历史      边缘计算
+```
+
+---
+
+[2.0.0]: https://github.com/NewLixing/gof-cdk/releases/tag/v2.0.0
+
 
 ### 新增
 
