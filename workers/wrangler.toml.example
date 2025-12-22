@@ -1,0 +1,34 @@
+# Cloudflare Workers 配置示例
+# 复制此文件为 wrangler.toml 并填入你的实际值
+
+name = "gof-cdk-worker"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+# KV 命名空间配置
+# 运行: wrangler kv:namespace create "TASKS_KV"
+# 将返回的 id 填入下方
+[[kv_namespaces]]
+binding = "TASKS_KV"
+id = "your_kv_namespace_id_here"  # 替换为实际的 KV namespace ID
+
+# D1 数据库配置
+# 运行: wrangler d1 create gof-cdk-history
+# 将返回的 database_id 填入下方
+[[d1_databases]]
+binding = "DB"
+database_name = "gof-cdk-history"
+database_id = "your_d1_database_id_here"  # 替换为实际的 D1 database ID
+
+# Workers AI 绑定
+# 用于验证码识别
+[ai]
+binding = "AI"
+
+# 生产环境配置
+[env.production]
+vars = { ENVIRONMENT = "production" }
+
+# 开发环境配置
+[env.development]
+vars = { ENVIRONMENT = "development" }

@@ -1,12 +1,21 @@
-import CryptoJS from 'crypto-js';
+/**
+ * Generate MD5 hash (using Web Crypto API)
+ */
+async function md5(text: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(text);
+  const hashBuffer = await crypto.subtle.digest('MD5', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
 /**
  * Generate signed object for API requests
  */
-export function generateSignedObject(
+export async function generateSignedObject(
   inputObject: Record<string, any>,
   salt: string
-): string {
+): Promise<string> {
   const sortedKeys = Object.keys(inputObject).sort();
   const signatureData: Record<string, any> = {};
   
@@ -18,7 +27,7 @@ export function generateSignedObject(
     .map(([key, value]) => `${key}=${value}`)
     .join('&');
   
-  const sign = CryptoJS.MD5(signStr + salt).toString();
+  const sign = await md5(signStr + salt);
   
   const result = new URLSearchParams();
   for (const [key, value] of Object.entries(signatureData)) {

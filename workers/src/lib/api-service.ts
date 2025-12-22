@@ -21,7 +21,7 @@ export class ApiService {
         time: Date.now(),
       };
 
-      const signedData = generateSignedObject(inputData, SIGN_SALT);
+      const signedData = await generateSignedObject(inputData, SIGN_SALT);
 
       const response = await fetch(`${API_BASE_URL}/player`, {
         method: 'POST',
@@ -51,7 +51,7 @@ export class ApiService {
         time: Date.now(),
       };
 
-      const signedData = generateSignedObject(inputData, SIGN_SALT);
+      const signedData = await generateSignedObject(inputData, SIGN_SALT);
 
       const response = await fetch(`${API_BASE_URL}/captcha`, {
         method: 'POST',
@@ -126,7 +126,7 @@ export class ApiService {
         time: Date.now(),
       };
 
-      const signedData = generateSignedObject(inputData, SIGN_SALT);
+      const signedData = await generateSignedObject(inputData, SIGN_SALT);
 
       const response = await fetch(`${API_BASE_URL}/gift_code`, {
         method: 'POST',
