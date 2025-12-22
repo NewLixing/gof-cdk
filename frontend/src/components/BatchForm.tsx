@@ -82,7 +82,9 @@ export default function BatchForm({ onTasksCreated }: BatchFormProps) {
           <textarea
             value={fids}
             onChange={(e) => setFids(e.target.value)}
-            placeholder="123456789&#10;987654321&#10;..."
+            placeholder="123456789
+987654321
+..."
             rows={4}
             className="input-field font-mono text-sm"
             disabled={loading}
@@ -100,7 +102,9 @@ export default function BatchForm({ onTasksCreated }: BatchFormProps) {
           <textarea
             value={cdks}
             onChange={(e) => setCdks(e.target.value)}
-            placeholder="WJDR666&#10;WJDR888&#10;..."
+            placeholder="WJDR666
+WJDR888
+..."
             rows={6}
             className="input-field font-mono text-sm"
             disabled={loading}

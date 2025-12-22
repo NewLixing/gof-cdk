@@ -7,7 +7,7 @@ const app = new Hono<{ Bindings: Env }>();
 
 // CORS middleware
 app.use('/*', cors({
-  origin: '*',
+  origin: '*', // TODO: In production, restrict to specific domains
   allowMethods: ['GET', 'POST', 'OPTIONS'],
   allowHeaders: ['Content-Type'],
 }));

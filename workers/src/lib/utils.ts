@@ -160,11 +160,11 @@ function md5(string: string): string {
  * Generate signed object for API requests
  */
 export async function generateSignedObject(
-  inputObject: Record<string, any>,
+  inputObject: Record<string, string | number>,
   salt: string
 ): Promise<string> {
   const sortedKeys = Object.keys(inputObject).sort();
-  const signatureData: Record<string, any> = {};
+  const signatureData: Record<string, string | number> = {};
   
   for (const key of sortedKeys) {
     signatureData[key] = inputObject[key];
