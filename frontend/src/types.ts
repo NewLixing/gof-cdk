@@ -1,5 +1,40 @@
 /**
- * Task status from API
+ * Subscribed player data
+ */
+export interface SubscribedPlayer {
+  fid: string;
+  nickname?: string;
+  kid?: number;
+  subscribedAt: number;
+  lastRedemptionAt?: number;
+}
+
+/**
+ * Gift code data
+ */
+export interface GiftCode {
+  code: string;
+  status: 'active' | 'expired';
+  addedAt: number;
+  expiredAt?: number;
+  description?: string;
+}
+
+/**
+ * Redemption record
+ */
+export interface RedemptionRecord {
+  fid: string;
+  code: string;
+  success: boolean;
+  message: string;
+  timestamp: number;
+  nickname?: string;
+  kid?: number;
+}
+
+/**
+ * Task status from API (legacy)
  */
 export interface TaskStatus {
   taskId: string;

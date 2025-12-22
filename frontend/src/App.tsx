@@ -1,34 +1,27 @@
-import { useState } from 'react';
-import BatchForm from './components/BatchForm';
-import TaskList from './components/TaskList';
-import type { PlayerTask } from './types';
+import PlayerManagement from './components/PlayerManagement';
+import GiftCodeManagement from './components/GiftCodeManagement';
+import AutoRedeemControl from './components/AutoRedeemControl';
 
 function App() {
-  const [tasks, setTasks] = useState<PlayerTask[]>([]);
-
-  const handleTasksCreated = (newTasks: PlayerTask[]) => {
-    setTasks(prev => [...newTasks, ...prev]);
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <header className="mb-12 text-center">
           <h1 className="text-5xl font-bold text-white mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
-            无尽冬日 礼包码批量领取平台
+            无尽冬日 礼包码自动领取系统
           </h1>
           <p className="text-gray-300 text-lg">
-            基于 Cloudflare Pages + Workers + AI 的现代化礼包码处理系统
+            订阅玩家 · 管理礼包码 · 自动领取
           </p>
           <div className="mt-4 flex justify-center gap-4 text-sm text-gray-400">
             <span className="flex items-center gap-2">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-              零运维
+              自动化
             </span>
             <span className="flex items-center gap-2">
               <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-              全球加速
+              订阅制
             </span>
             <span className="flex items-center gap-2">
               <span className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></span>
@@ -38,15 +31,39 @@ function App() {
         </header>
 
         {/* Main Content */}
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Left: Form */}
-          <div>
-            <BatchForm onTasksCreated={handleTasksCreated} />
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Left: Player Management */}
+          <div className="lg:col-span-1">
+            <PlayerManagement />
           </div>
 
-          {/* Right: Task List */}
-          <div>
-            <TaskList tasks={tasks} onTaskUpdate={setTasks} />
+          {/* Middle: Gift Code Management */}
+          <div className="lg:col-span-1">
+            <GiftCodeManagement />
+          </div>
+
+          {/* Right: Auto Redeem Control */}
+          <div className="lg:col-span-1">
+            <AutoRedeemControl />
+          </div>
+        </div>
+
+        {/* Instructions */}
+        <div className="mt-8 card p-6">
+          <h3 className="text-xl font-bold text-white mb-4">📖 使用说明</h3>
+          <div className="grid md:grid-cols-3 gap-6 text-sm text-gray-300">
+            <div>
+              <h4 className="font-semibold text-white mb-2">1️⃣ 订阅玩家</h4>
+              <p>在左侧输入玩家ID进行订阅，系统会自动保存玩家信息。</p>
+            </div>
+            <div>
+              <h4 className="font-semibold text-white mb-2">2️⃣ 管理礼包码</h4>
+              <p>在中间添加礼包码到系统，有效礼包码会自动用于领取。</p>
+            </div>
+            <div>
+              <h4 className="font-semibold text-white mb-2">3️⃣ 自动领取</h4>
+              <p>点击右侧按钮，系统将为所有订阅玩家自动领取所有礼包码。</p>
+            </div>
           </div>
         </div>
 

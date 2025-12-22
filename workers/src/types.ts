@@ -8,7 +8,42 @@ export interface Env {
 }
 
 /**
- * Batch task request
+ * Subscribed player data
+ */
+export interface SubscribedPlayer {
+  fid: string;
+  nickname?: string;
+  kid?: number;
+  subscribedAt: number;
+  lastRedemptionAt?: number;
+}
+
+/**
+ * Gift code data
+ */
+export interface GiftCode {
+  code: string;
+  status: 'active' | 'expired';
+  addedAt: number;
+  expiredAt?: number;
+  description?: string;
+}
+
+/**
+ * Redemption record
+ */
+export interface RedemptionRecord {
+  fid: string;
+  code: string;
+  success: boolean;
+  message: string;
+  timestamp: number;
+  nickname?: string;
+  kid?: number;
+}
+
+/**
+ * Batch task request (legacy)
  */
 export interface BatchTaskRequest {
   fids: string[];
@@ -16,7 +51,7 @@ export interface BatchTaskRequest {
 }
 
 /**
- * Task status response
+ * Task status response (legacy)
  */
 export interface TaskStatus {
   taskId: string;
