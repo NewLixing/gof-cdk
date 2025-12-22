@@ -25,10 +25,15 @@ database_id = "your_d1_database_id_here"  # 替换为实际的 D1 database ID
 [ai]
 binding = "AI"
 
+# 环境变量
+# ENABLE_MANAGER_PAGE: 设置为 "true" 启用管理后台页面（可选）
+[vars]
+ENABLE_MANAGER_PAGE = "true"
+
 # 生产环境配置
 [env.production]
-vars = { ENVIRONMENT = "production" }
+vars = { ENVIRONMENT = "production", ENABLE_MANAGER_PAGE = "true" }
 
 # 开发环境配置
 [env.development]
-vars = { ENVIRONMENT = "development" }
+vars = { ENVIRONMENT = "development", ENABLE_MANAGER_PAGE = "true" }

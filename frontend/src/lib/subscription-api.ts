@@ -252,10 +252,46 @@ export async function submitGiftCode(code: string): Promise<{
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
+    const result = await response.json();
+    
+    // Extract data from nested structure
+    if (result.success && result.data) {
+      return {
+        success: true,
+        isValid: result.data.isValid,
+        playersTriggered: result.data.playersTriggered,
+      };
+    }
+    
+    return result;
+  } catch (error) {
+    console.error('Failed to submit gift code:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+/**
+ * Get player redemptions
+ */
+export async function getPlayerRedemptions(fid: string): Promise<{
+  success: boolean;
+  data?: RedemptionRecord[];
+  error?: string;
+}> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/players/${fid}/redemptions`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Failed to submit gift code:', error);
+    console.error('Failed to get player redemptions:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
