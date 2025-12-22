@@ -25,7 +25,7 @@ cd workers
 npm install
 
 # 创建 KV 命名空间
-wrangler kv:namespace create "TASKS_KV"
+wrangler kv namespace create "TASKS_KV"
 # 复制返回的 id，更新到 wrangler.toml 的 [[kv_namespaces]] id
 
 # 创建 D1 数据库
